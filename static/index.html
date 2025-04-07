@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Typing Hello World</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            main {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                text-align: center;
+            }
+
+            h1 {
+                font-size: 3rem;
+                font-weight: bold;
+                color: #1e293b;
+                min-height: 4.5rem; /* Prevent layout shift when text changes */
+                margin-bottom: 0.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                color: #64748b;
+                margin-top: 1rem;
+                font-weight: 500;
+            }
+
+            .subtitle a {
+                color: #0f766e;
+                text-decoration: none;
+                transition: color 0.2s ease;
+            }
+
+            .subtitle a:hover {
+                color: #0e7490;
+                text-decoration: underline;
+            }
+
+            .cursor {
+                display: inline-block;
+                margin-left: 4px;
+                animation: blink 1s infinite;
+            }
+
+            @keyframes blink {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div>
+                <h1>
+                    <span id="text"></span>
+                    <span class="cursor">|</span>
+                </h1>
+                <p class="subtitle">
+                    Deployed from
+                    <a href="https://infra.new" target="_blank">infra.new</a>
+                </p>
+            </div>
+        </main>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const textElement = document.getElementById("text");
+                let currentText = "Hello, World!";
+                let index = 0;
+                let isTyping = false;
+
+                // Function to type out text character by character
+                function typeText(text) {
+                    isTyping = true;
+                    if (index < text.length) {
+                        textElement.textContent += text[index];
+                        index++;
+                        setTimeout(() => typeText(text), 150);
+                    } else {
+                        isTyping = false;
+                        // Wait 2 seconds after completing the text, then fetch new message
+                        setTimeout(fetchNewMessage, 2000);
+                    }
+                }
+
+                // Function to clear the current text and reset index
+                function clearText() {
+                    textElement.textContent = "";
+                    index = 0;
+                }
+
+                // Function to fetch a new message from the API
+                function fetchNewMessage() {
+                    fetch("/api/hello")
+                        .then((response) => {
+                            if (!response.ok) {
+                                throw new Error("Network response was not ok");
+                            }
+                            return response.json();
+                        })
+                        .then((data) => {
+                            // Clear current text and start typing the new message
+                            clearText();
+                            currentText = data.message;
+                            typeText(currentText);
+                        })
+                        .catch((error) => {
+                            console.error("Error fetching new message:", error);
+                            // If there's an error, wait 5 seconds and try again
+                            setTimeout(fetchNewMessage, 5000);
+                        });
+                }
+
+                // Start the initial typing
+                typeText(currentText);
+            });
+        </script>
+    </body>
+</html>
